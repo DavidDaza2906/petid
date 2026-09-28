@@ -3,7 +3,8 @@
 Prototipo: la ficha de una mascota vive en Supabase, se sirve como perfil público en Vercel, y el dueño genera un QR para el collar con un link directo a WhatsApp.
 
 - Stack: Vercel (estático + funciones serverless) + Supabase (Postgres) + GitHub. Sin framework de frontend, sin ORM.
-- Tests: `vitest` (31 tests: helpers puros y handlers con la capa de datos falsificada — no tocan red ni credenciales).
+- Tests: `vitest` (46 tests: helpers puros, handlers con la capa de datos falsificada y el QR decodificado de verdad con `jsqr` — no tocan red ni credenciales).
+- QR: lo genera el servidor con `qrcode` (MIT, 1.5.4). Nunca un CDN: si el CDN cae, el QR se queda sin dibujar (ya pasó, ver `Caveats`).
 
 ## Rutas
 
@@ -14,8 +15,9 @@ Prototipo: la ficha de una mascota vive en Supabase, se sirve como perfil públi
 | `GET /api/pets/<slug>` | Datos públicos (sin `edit_token`) |
 | `PUT /api/pets/<slug>` | Actualiza; exige `edit_token` correcto → si no, `403` |
 | `GET /pet/<slug>` | Perfil público (rewrite → `/api/profile/<slug>`, HTML server-side) |
+| `GET /api/qr/<slug>` | PNG del QR que apunta a `/pet/<slug>` (server-side, `qrcode` MIT). `?download=1` fuerza la descarga |
 | `/pet/<slug>/edit` | Edición (token desde `localStorage` o `?token=`) |
-| `/pet/<slug>/tag` | Generador de QR: preview en vivo, descarga PNG e impresión |
+| `/pet/<slug>/tag` | Página del collar: `<img>` contra `/api/qr/<slug>`, descarga PNG e impresión |
 
 ## Flujo de uso
 
@@ -47,12 +49,13 @@ La `service_role` key vive **solo** en las funciones serverless; el navegador nu
 
 ## Caveats del free tier (honestos)
 
-- **Supabase pausa proyectos inactivos** (~1 semana sin actividad) → un proyecto pausado deja el QR muerto. Mitigación: `.github/workflows/keepalive.yml` hace un ping diario a la app y a una ficha. Si aun así se pausa, se restaura con un clic en el dashboard.
+- **Supabase pausa proyectos inactivos** (~1 semana sin actividad) → un proyecto pausado deja el QR muerto. Mitigación: `.github/workflows/keepalive.yml` hace un ping diario a la app y otra contra la base (una lectura que devuelve 404). Si aun así se pausa, se restaura con un clic en el dashboard.
 - **Vercel Hobby** es para uso personal/no comercial. Si esto se vuelve negocio, toca plan Pro.
 - **Sin RLS en el prototipo**: `public.pets` tiene RLS deshabilitado. Como la única clave que existe es la `service_role` (que ignora RLS de todos modos) y el navegador jamás recibe una clave, el riesgo hoy es el de la API abierta: cualquiera puede crear fichas. Antes de exponer esto en serio: activar RLS + políticas y pasar a claves publicables + RPC.
 - **Sin recuperación de token**: si se pierde, hay que editar la fila en Supabase o crear una ficha nueva (no hay login de dueños, decisión del prototipo).
 - **Foto por URL**: la subida de archivos quedó fuera; `photo_url` es un enlace directo a una imagen.
-- `location.origin` para el QR es correcto en producción; con `vercel dev` genera la URL local (`http://localhost:3000/pet/...`), no la pública.
+- `GET /api/qr/<slug>` genera el PNG al vuelo a partir del host de la petición y lo cachea (1 h en navegador, 1 día en el borde de Vercel): si algún día cambia el dominio, el QR viejo puede servirse desde caché.
+- El QR se dibuja en el servidor, no en el navegador: si el JS de la página del collar fallara, el QR sigue siendo accesible en `/api/qr/<slug>`.
 
 ## Fuera de alcance
 

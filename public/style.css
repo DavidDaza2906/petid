@@ -255,10 +255,9 @@ textarea:focus {
   gap: 12px;
 }
 
-#qr {
+.qr-code {
   width: min(320px, 100%);
   height: auto;
-  image-rendering: pixelated;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;

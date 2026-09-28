@@ -1,4 +1,4 @@
-import { esc, pickPublic, publicPetUrl, trimmedString, waLink } from "../lib/helpers.js";
+import { esc, pickPublic, publicPetUrl, requestOrigin, trimmedString, waLink } from "../lib/helpers.js";
 import { store as defaultStore } from "../lib/db.js";
 import { attempt, errorMessage, sendHtml } from "../lib/http.js";
 
@@ -108,9 +108,7 @@ export function createProfileHandler(deps = {}) {
     }
     if (!pet) return sendHtml(res, 404, notFoundPage(slug));
 
-    const host = req.headers?.host ?? "";
-    const proto = req.headers?.["x-forwarded-proto"] ?? "https";
-    const origin = host ? `${proto}://${host}` : "";
+    const origin = requestOrigin(req);
 
     // pickPublic garantiza que edit_token nunca entra en el HTML.
     return sendHtml(res, 200, petPage(pickPublic(pet), origin));

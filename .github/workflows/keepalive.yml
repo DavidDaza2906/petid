@@ -10,12 +10,22 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    env:
+      BASE: ${{ vars.PETID_BASE_URL || 'https://petid-eight.vercel.app' }}
     steps:
-      - name: Ping app + una ficha pública
+      - name: Ping a la app
         run: |
           set -euo pipefail
-          BASE="${{ vars.PETID_BASE_URL || 'https://petid-eight.vercel.app' }}"
-          echo "Ping $BASE/"
-          curl -fsS -o /dev/null -w "  / -> %{http_code}\n" "$BASE/"
-          echo "Ping Supabase via una ficha"
-          curl -fsS -o /dev/null -w "  /pet/mila -> %{http_code}\n" "$BASE/pet/mila"
+          curl -fsS -o /dev/null -w "  $BASE/ -> %{http_code}\n" "$BASE/"
+
+      - name: Despertar la base de datos
+        run: |
+          set -euo pipefail
+          # Una ficha inexistente: la API consulta Postgres y responde 404.
+          # El 404 es el resultado esperado (una peticion que toca la base = actividad).
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/pets/__keepalive__")
+          echo "  lectura a la base -> $CODE"
+          if [ "$CODE" != "404" ] && [ "$CODE" != "200" ]; then
+            echo "Respuesta inesperada: la API o la base no estan sanas"
+            exit 1
+          fi

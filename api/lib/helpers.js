@@ -72,6 +72,14 @@ export function publicPetUrl(origin, slug) {
   return `${String(origin ?? "").replace(/\/+$/, "")}/pet/${encodeURIComponent(String(slug ?? ""))}`;
 }
 
+/** Origin absoluto de la peticion (Vercel manda host y x-forwarded-proto). */
+export function requestOrigin(req) {
+  const host = req?.headers?.host;
+  if (!host) return "";
+  const proto = String(req?.headers?.["x-forwarded-proto"] ?? "https").split(",")[0].trim();
+  return `${proto}://${host}`;
+}
+
 /** Quita edit_token y cualquier columna no publica. */
 export function pickPublic(row) {
   const out = {};
