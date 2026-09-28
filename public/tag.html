@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR del collar — PETID</title>
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
+</head>
+<body>
+<header class="topbar"><a href="/" class="brand">PETID</a></header>
+<main>
+  <section class="card no-print">
+    <h1>QR del collar</h1>
+    <p class="muted" id="subtitle">Cargando…</p>
+  </section>
+
+  <section class="card qr-wrap" id="card" hidden>
+    <div class="tile">
+      <p class="cut">Si me encuentras, escanéame<small>Así avisas a mi familia</small></p>
+      <canvas id="qr" width="320" height="320"></canvas>
+      <p class="cut" id="pet-name"></p>
+      <p class="muted small">O visita: <code id="url"></code></p>
+    </div>
+    <div class="actions no-print">
+      <button class="btn" id="download" type="button">Descargar PNG</button>
+      <button class="btn ghost" id="print" type="button">Imprimir</button>
+    </div>
+    <p class="muted small no-print" id="hint">Imprime en tamaño carnet (5×5 cm) y engrápalo o plastifícalo junto a la placa del collar.</p>
+  </section>
+
+  <section class="card no-print" id="problem-card" hidden>
+    <div class="notice bad" id="problem"></div>
+  </section>
+</main>
+
+<script type="module">
+const params = new URLSearchParams(location.search);
+const slug = (params.get("slug") || location.pathname.split("/")[2] || "").trim();
+const publicUrl = () => `${location.origin.replace(/\/+$/, "")}/pet/${encodeURIComponent(slug)}`;
+
+function fail(message) {
+  document.getElementById("problem").textContent = message;
+  document.getElementById("problem-card").hidden = false;
+  document.getElementById("subtitle").textContent = "No se pudo generar el QR.";
+}
+
+async function drawQr(text) {
+  const canvas = document.getElementById("qr");
+  if (typeof QRCode === "undefined") {
+    const fallback = document.getElementById("hint");
+    fallback.textContent = `No se pudo cargar la librería del QR (¿sin conexión?). El enlace público es: ${text}`;
+    return false;
+  }
+  await QRCode.toCanvas(canvas, text, { errorCorrectionLevel: "H", width: 320, margin: 4 });
+  return true;
+}
+
+function downloadPng() {
+  const canvas = document.getElementById("qr");
+  const link = document.createElement("a");
+  link.download = `petid-qr-${slug}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+async function init() {
+  if (!slug) return fail("Falta el slug de la mascota en la URL.");
+
+  let petName = slug;
+  try {
+    const response = await fetch(`/api/pets/${encodeURIComponent(slug)}`);
+    if (response.status === 404) return fail(`La ficha /${slug} no existe.`);
+    if (response.ok) petName = (await response.json()).pet.name;
+  } catch {
+    // Si la API falla, el QR sigue siendo válido: solo perdemos el nombre bonito.
+  }
+
+  const url = publicUrl();
+  const ok = await drawQr(url);
+  document.getElementById("url").textContent = url;
+  document.getElementById("pet-name").textContent = petName;
+  document.title = `QR de ${petName} — PETID`;
+  document.getElementById("subtitle").textContent = `QR de ${petName}, apuntando a ${url}`;
+  document.getElementById("card").hidden = false;
+
+  document.getElementById("download").addEventListener("click", downloadPng);
+  document.getElementById("print").addEventListener("click", () => window.print());
+  if (ok) document.getElementById("hint").textContent =
+    "Imprime en tamaño carnet (5×5 cm) y engrápalo o plastifícalo junto a la placa del collar.";
+}
+
+init();
+</script>
+</body>
+</html>

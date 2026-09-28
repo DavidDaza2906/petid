@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editar ficha — PETID</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar"><a href="/" class="brand">PETID</a></header>
+<main>
+  <section class="card">
+    <h1>Editar la ficha</h1>
+    <p class="muted" id="subtitle">Cargando…</p>
+  </section>
+
+  <section class="card" id="token-card" hidden>
+    <h2>Token de edición</h2>
+    <p class="muted small">Se guarda en este navegador. Sin él no se puede guardar.</p>
+    <label>Token
+      <input id="token" maxlength="64" placeholder="32 caracteres hex" autocomplete="off">
+    </label>
+  </section>
+
+  <section class="card" id="form-card" hidden>
+    <h2>Datos</h2>
+    <form id="pet-form" novalidate>
+      <label>Nombre de la mascota *
+        <input name="name" required maxlength="60">
+      </label>
+      <div class="grid-2">
+        <label>Especie
+          <input name="species" maxlength="40">
+        </label>
+        <label>Raza
+          <input name="breed" maxlength="60">
+        </label>
+      </div>
+      <div class="grid-2">
+        <label>Edad
+          <input name="age" maxlength="40">
+        </label>
+        <label>Foto (URL)
+          <input name="photo_url" type="url">
+        </label>
+      </div>
+      <label>Notas médicas
+        <textarea name="medical_notes" rows="3" maxlength="500"></textarea>
+      </label>
+      <label>Tu nombre *
+        <input name="owner_name" required maxlength="60">
+      </label>
+      <label>Tu WhatsApp / teléfono *
+        <input name="owner_phone" required maxlength="30" inputmode="tel">
+      </label>
+      <label>Algo más sobre la mascota
+        <textarea name="owner_note" rows="3" maxlength="500"></textarea>
+      </label>
+      <button class="btn" type="submit" id="submit">Guardar cambios</button>
+      <div class="notice ok" id="saved" hidden>Cambios guardados.</div>
+      <div class="notice bad" id="problem" hidden></div>
+    </form>
+  </section>
+
+  <section class="card" id="missing" hidden>
+    <h2>No encontramos esa ficha</h2>
+    <p class="muted">Revisa el enlace o crea una ficha nueva.</p>
+    <a class="btn" href="/">Crear una ficha</a>
+  </section>
+</main>
+
+<script type="module">
+const params = new URLSearchParams(location.search);
+const slug = (params.get("slug") || location.pathname.split("/")[2] || "").trim();
+const tokenKey = `petid:token:${slug}`;
+const fields = ["name", "species", "breed", "age", "photo_url", "medical_notes", "owner_name", "owner_phone", "owner_note"];
+const tokenInput = document.getElementById("token");
+const form = document.getElementById("pet-form");
+const submit = document.getElementById("submit");
+
+function storedToken() {
+  return localStorage.getItem(tokenKey) || params.get("token") || "";
+}
+
+function showError(message) {
+  const box = document.getElementById("problem");
+  box.textContent = message;
+  box.hidden = false;
+}
+
+async function load() {
+  if (!slug) {
+    document.getElementById("missing").hidden = false;
+    return;
+  }
+  const response = await fetch(`/api/pets/${encodeURIComponent(slug)}`);
+  if (response.status === 404) {
+    document.getElementById("subtitle").textContent = "Ficha inexistente.";
+    document.getElementById("missing").hidden = false;
+    return;
+  }
+  const { pet } = await response.json();
+  document.getElementById("subtitle").textContent = `Ficha de ${pet.name} (/${pet.slug})`;
+  document.title = `Editar ${pet.name} — PETID`;
+  for (const field of fields) {
+    form.elements[field].value = pet[field] ?? "";
+  }
+  tokenInput.value = storedToken();
+  tokenInput.addEventListener("change", () => {
+    if (tokenInput.value) localStorage.setItem(tokenKey, tokenInput.value.trim());
+  });
+  document.getElementById("token-card").hidden = false;
+  document.getElementById("form-card").hidden = false;
+  if (storedToken()) document.getElementById("token-card").querySelector("p").textContent =
+    "Token recuperado de este navegador. Puedes reemplazarlo por otro.";
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  document.getElementById("problem").hidden = true;
+  document.getElementById("saved").hidden = true;
+
+  const token = tokenInput.value.trim();
+  if (!token) return showError("Falta el token de edición.");
+
+  const data = { edit_token: token };
+  for (const field of fields) data[field] = form.elements[field].value.trim();
+
+  submit.disabled = true;
+  submit.textContent = "Guardando…";
+  try {
+    const response = await fetch(`/api/pets/${encodeURIComponent(slug)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const payload = await response.json();
+    if (response.status === 403) throw new Error("Ese token no sirve para esta ficha.");
+    if (!response.ok) throw new Error(payload.required ? `Falta: ${payload.required.join(", ")}` : (payload.error || "error"));
+    localStorage.setItem(tokenKey, token);
+    document.getElementById("saved").hidden = false;
+  } catch (error) {
+    showError(String(error.message || error));
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Guardar cambios";
+  }
+});
+
+load();
+</script>
+</body>
+</html>

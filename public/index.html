@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PETID — collar QR para mascotas</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar"><a href="/" class="brand">PETID</a></header>
+<main>
+  <section class="card">
+    <h1>Collar QR para tu mascota</h1>
+    <p class="muted">Llena la ficha. Te damos un QR para el collar: quien lo escanee verá los datos y podrá escribirte por WhatsApp.</p>
+  </section>
+
+  <section class="card" id="form-card">
+    <h2>Ficha de la mascota</h2>
+    <form id="pet-form" novalidate>
+      <label>Nombre de la mascota *
+        <input name="name" required maxlength="60" placeholder="Mila" autocomplete="off">
+      </label>
+      <div class="grid-2">
+        <label>Especie
+          <input name="species" maxlength="40" placeholder="Perra" autocomplete="off">
+        </label>
+        <label>Raza
+          <input name="breed" maxlength="60" placeholder="Criolla" autocomplete="off">
+        </label>
+      </div>
+      <div class="grid-2">
+        <label>Edad
+          <input name="age" maxlength="40" placeholder="3 años" autocomplete="off">
+        </label>
+        <label>Foto (URL) <span>enlace directo a la imagen</span>
+          <input name="photo_url" type="url" placeholder="https://…/mila.jpg" autocomplete="off">
+        </label>
+      </div>
+      <label>Notas médicas <span>alergias, medicamentos, condiciones</span>
+        <textarea name="medical_notes" rows="3" maxlength="500" placeholder="Alérgica a la penicilina"></textarea>
+      </label>
+      <label>Tu nombre *
+        <input name="owner_name" required maxlength="60" autocomplete="name">
+      </label>
+      <label>Tu WhatsApp / teléfono * <span>con indicativo del país, ej. +57 300 123 4567</span>
+        <input name="owner_phone" required maxlength="30" placeholder="+57 300 123 4567" inputmode="tel" autocomplete="tel">
+      </label>
+      <label>Algo más sobre la mascota <span>carácter, cómo se acerca a la gente</span>
+        <textarea name="owner_note" rows="3" maxlength="500" placeholder="Muy juguetona, no muerde"></textarea>
+      </label>
+      <button class="btn" type="submit" id="submit">Crear la ficha</button>
+    </form>
+  </section>
+
+  <section class="card" id="result" hidden>
+    <h2>Ficha lista</h2>
+    <div class="notice ok">Guarda estas dos cosas: el enlace público va en el QR, y el token es la única llave para editar. El token se muestra UNA sola vez.</div>
+    <p>Enlace público: <code id="r-url"></code></p>
+    <p>Token de edición: <span class="token" id="r-token"></span></p>
+    <div class="actions">
+      <a class="btn" id="r-profile">Ver perfil público</a>
+      <a class="btn ghost" id="r-tag">Generar el QR</a>
+    </div>
+  </section>
+
+  <section class="card" id="error" hidden>
+    <h2>No se pudo crear</h2>
+    <div class="notice bad" id="error-text"></div>
+  </section>
+</main>
+
+<script type="module">
+const tokenKey = (slug) => `petid:token:${slug}`;
+const form = document.getElementById("pet-form");
+const submit = document.getElementById("submit");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(form).entries());
+  submit.disabled = true;
+  submit.textContent = "Creando…";
+  document.getElementById("error").hidden = true;
+  try {
+    const response = await fetch("/api/pets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.required ? `Falta: ${payload.required.join(", ")}` : (payload.error || "error"));
+
+    localStorage.setItem(tokenKey(payload.slug), payload.edit_token);
+    const url = `${location.origin}/pet/${payload.slug}`;
+    const set = (id, value) => { document.getElementById(id).textContent = value; };
+    set("r-url", url);
+    set("r-token", payload.edit_token);
+    document.getElementById("r-profile").href = `/pet/${payload.slug}`;
+    document.getElementById("r-tag").href = `/pet/${payload.slug}/tag`;
+    document.getElementById("result").hidden = false;
+    form.hidden = true;
+    document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (error) {
+    document.getElementById("error-text").textContent = String(error.message || error);
+    document.getElementById("error").hidden = false;
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Crear la ficha";
+  }
+});
+</script>
+</body>
+</html>
