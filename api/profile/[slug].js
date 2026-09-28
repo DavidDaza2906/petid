@@ -1,6 +1,6 @@
 import { esc, pickPublic, publicPetUrl, trimmedString, waLink } from "../lib/helpers.js";
 import { store as defaultStore } from "../lib/db.js";
-import { errorMessage, sendHtml } from "../lib/http.js";
+import { attempt, errorMessage, sendHtml } from "../lib/http.js";
 
 function line(label, value) {
   if (!value) return "";
@@ -98,7 +98,7 @@ export function createProfileHandler(deps = {}) {
     const slug = trimmedString(req.query?.slug);
     if (!slug) return sendHtml(res, 404, notFoundPage(slug));
 
-    const { data: pet, error } = await store.getPet(slug);
+    const { data: pet, error } = await attempt(() => store.getPet(slug));
     if (error) {
       return sendHtml(
         res,

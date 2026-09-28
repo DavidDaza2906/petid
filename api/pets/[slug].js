@@ -1,6 +1,6 @@
 import { pickEditable, pickPublic, REQUIRED_IF_PRESENT, trimmedString } from "../lib/helpers.js";
 import { store as defaultStore } from "../lib/db.js";
-import { errorMessage, readJson, sendJson } from "../lib/http.js";
+import { errorMessage, attempt, readJson, sendJson } from "../lib/http.js";
 
 export function createPetHandler(deps = {}) {
   const store = deps.store ?? defaultStore;
@@ -9,7 +9,7 @@ export function createPetHandler(deps = {}) {
     const slug = trimmedString(req.query?.slug);
     if (!slug) return sendJson(res, 400, { error: "missing_slug" });
 
-    const { data: pet, error } = await store.getPet(slug);
+    const { data: pet, error } = await attempt(() => store.getPet(slug));
     if (error) return sendJson(res, 500, { error: "read_failed", detail: errorMessage(error) });
     if (!pet) return sendJson(res, 404, { error: "not_found" });
 
@@ -34,7 +34,7 @@ export function createPetHandler(deps = {}) {
         return sendJson(res, 400, { error: "missing_fields", required: emptied });
       }
 
-      const { data: updated, error: updateError } = await store.updatePet(slug, patch);
+      const { data: updated, error: updateError } = await attempt(() => store.updatePet(slug, patch));
       if (updateError) {
         return sendJson(res, 500, { error: "update_failed", detail: errorMessage(updateError) });
       }

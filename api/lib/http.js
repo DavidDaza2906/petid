@@ -51,3 +51,12 @@ export function errorMessage(error) {
   if (!error) return "unknown_error";
   return error.message ?? String(error);
 }
+
+/** Ejecuta una operación de la capa de datos y convierte un throw en { error }. */
+export async function attempt(operation) {
+  try {
+    return await operation();
+  } catch (error) {
+    return { error };
+  }
+}
