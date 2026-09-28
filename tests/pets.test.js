@@ -24,8 +24,8 @@ describe("POST /api/pets", () => {
       name: "Firulais",
       owner_name: "Daw",
       owner_phone: "+57 300 123 4567",
-      species: "Perra",
-      medical_notes: "Alérgica",
+      species: "Perro",
+      medical_notes: "Alérgico",
       edit_token: "inyectado-por-el-cliente",
     });
 

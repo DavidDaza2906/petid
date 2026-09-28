@@ -3,8 +3,10 @@
 Prototipo: la ficha de una mascota vive en Supabase, se sirve como perfil público en Vercel, y el dueño genera un QR para el collar con un link directo a WhatsApp.
 
 - Stack: Vercel (estático + funciones serverless) + Supabase (Postgres) + GitHub. Sin framework de frontend, sin ORM.
-- Tests: `vitest` (46 tests: helpers puros, handlers con la capa de datos falsificada y el QR decodificado de verdad con `jsqr` — no tocan red ni credenciales).
+- Tests: `vitest` (53 tests: helpers puros, handlers con la capa de datos falsificada y el QR decodificado de verdad con `jsqr` — no tocan red ni credenciales).
 - QR: lo genera el servidor con `qrcode` (MIT, 1.5.4). Nunca un CDN: si el CDN cae, el QR se queda sin dibujar (ya pasó, ver `Caveats`).
+- Interfaz: "Carnet". La ficha se lee como un documento impreso (carné de vacunación, pasaporte). Tipografías autoalojadas en `public/fonts/` —Source Serif 4 y JetBrains Mono, ambas OFL, subconjunto latino, 88 KB entre las dos, un archivo variable por familia— servidas desde el propio sitio, sin CDN de fuentes.
+- Impresión: la etiqueta del collar sale a **50 × 50 mm reales** (`@page` + `.tile{width:50mm;height:50mm}`). No es una promesa: se imprime a PDF, se rasteriza a 300 dpi y se mide el recorte (49,7 × 50,0 mm, QR de 21,7 mm que **decodifica desde los píxeles impresos**, módulo 0,87 mm).
 
 ## Rutas
 

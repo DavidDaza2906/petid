@@ -57,6 +57,12 @@ export function waLink(phone) {
   return digits ? `https://wa.me/${digits}` : "";
 }
 
+/** "+57 300 123 4567" -> "tel:+573001234567". Para llamar de un toque, sin WhatsApp. */
+export function telLink(phone) {
+  const limpio = String(phone ?? "").replace(/[^\d+]/g, "");
+  return limpio ? `tel:${limpio}` : "";
+}
+
 /** Escapa texto para insertarlo en HTML. */
 export function esc(value) {
   return String(value ?? "")

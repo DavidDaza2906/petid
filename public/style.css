@@ -1,16 +1,25 @@
+/* ============================================================
+   PETID · interfaz "Carnet"
+   La ficha es un documento impreso: carné de vacunación, pasaporte.
+   Motivo de identidad: marcas de corte, filetes de 1px, rótulos en
+   monoespaciada y cifras tabulares.
+
+   Las fuentes se sirven desde este sitio (sin CDN), en el subconjunto
+   latino que cubre tildes y eñes. Ver public/fonts/.
+   ============================================================ */
+@import url("fonts/fonts.css");
+
 :root {
-  --bg: #f6f4ef;
-  --card: #ffffff;
-  --ink: #22201d;
-  --ink-soft: #6b665e;
-  --line: #e2ddd2;
-  --accent: #1f6f5c;
-  --accent-ink: #ffffff;
-  --warn-bg: #fdf3e3;
-  --warn-line: #e6cfa4;
+  --papel: #f2ede1;
+  --papel-alto: #faf7ef;
+  --tinta: #1b1a17;
+  --tinta-suave: #5f594e;
+  --filete: #c6bda8;
+  --sello: #8c2f2f;
   --wa: #25d366;
-  --radius: 14px;
-  --shadow: 0 1px 2px rgba(34, 32, 29, 0.06), 0 8px 24px -16px rgba(34, 32, 29, 0.25);
+
+  --serif: "Source Serif 4", "Noto Serif", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", "Noto Sans Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 
 * {
@@ -23,105 +32,267 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--serif);
   font-size: 17px;
   line-height: 1.55;
+  /* Retícula tenue de documento: el papel no es un lienzo en blanco. */
+  background-image: linear-gradient(to bottom, rgba(27, 26, 23, 0.035) 1px, transparent 1px);
+  background-size: 100% 22px;
 }
 
 main {
-  width: min(680px, 100%);
+  width: min(640px, 100%);
   margin: 0 auto;
-  padding: 20px 16px 64px;
+  padding: 22px 18px 56px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
+/* ---------- Cabecera ---------- */
+
 .topbar {
-  padding: 16px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg);
+  padding: 12px 16px;
+  background: var(--papel-alto);
+  border-bottom: 1px solid var(--tinta);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
 }
 
 .brand {
   display: inline-block;
+  font-family: var(--mono);
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  font-size: 14px;
-  color: var(--ink);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--tinta);
   text-decoration: none;
 }
 
+.brand::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  background: var(--sello);
+}
+
+/* El número de ficha es el slug real de la mascota, no un adorno. */
+.topbar::after {
+  content: attr(data-ficha);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+
+/* ---------- Tarjetas y títulos ---------- */
+
 .card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  background: var(--papel-alto);
+  border: 1px solid var(--filete);
+  border-radius: 1px;
   padding: 20px;
 }
 
 .card h1 {
-  font-size: 28px;
-  line-height: 1.2;
-  margin: 0 0 8px;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0 0 6px;
 }
 
 .card h2 {
-  font-size: 15px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ink-soft);
-  margin: 0 0 12px;
+  color: var(--tinta-suave);
+  margin: 0 0 14px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--filete);
+}
+
+/* Márgenes de párrafo propios: los del navegador abren huecos de más
+   dentro de una tarjeta. */
+.card p {
+  margin: 0 0 10px;
+}
+
+.card p:last-child {
+  margin-bottom: 0;
 }
 
 .hero {
   text-align: center;
+  position: relative;
 }
 
 .hero h1 {
-  font-size: 34px;
+  font-size: 36px;
+}
+
+/* Marcas de corte: la ventanilla del retrato, como un documento troquelado. */
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--tinta);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.hero::before {
+  top: 8px;
+  left: 8px;
+  border-width: 1px 0 0 1px;
+}
+
+.hero::after {
+  bottom: 8px;
+  right: 8px;
+  border-width: 0 1px 1px 0;
 }
 
 .photo {
-  width: 128px;
-  height: 128px;
+  /* Cubre el hueco rotulado mientras carga; si falla y se quita, la inicial vuelve. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 50%;
-  border: 3px solid var(--card);
-  outline: 1px solid var(--line);
-  margin-bottom: 12px;
+  background: #fff;
+  border: 1px solid var(--tinta);
+  padding: 5px;
+}
+
+/* Sin foto: en un documento el hueco vacío se rotula, no se disimula. */
+.photo-slot {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 18px;
+  position: relative;
+  border: 1px dashed var(--filete);
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.photo-slot .initial {
+  font-size: 62px;
+  line-height: 1;
+  color: var(--sello);
+}
+
+.photo-slot .no-photo {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0 5px;
+  background: var(--papel-alto);
+  color: var(--tinta-suave);
+  white-space: nowrap;
 }
 
 .found {
-  margin: 16px 0 12px;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--tinta-suave);
+  margin: 14px 0 10px;
 }
 
 .muted {
-  color: var(--ink-soft);
+  color: var(--tinta-suave);
 }
 
 .small {
-  font-size: 14px;
+  font-size: 13px;
 }
 
-.alert {
-  background: var(--warn-bg);
-  border-color: var(--warn-line);
+a {
+  color: var(--sello);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+/* ---------- Botones ---------- */
+
+.btn {
+  display: block;
+  padding: 13px 16px;
+  background: var(--tinta);
+  color: var(--papel-alto);
+  border: 0;
+  border-radius: 1px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn.wa {
+  background: var(--wa);
+  color: #06301a;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--tinta);
+  border: 1px solid var(--tinta);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* ---------- La ficha ---------- */
+
+.phone {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  margin: 10px 0 0;
+  color: var(--tinta);
 }
 
 dl {
   margin: 0;
   display: grid;
-  gap: 8px;
 }
 
 .row {
   display: flex;
-  gap: 12px;
   justify-content: space-between;
-  border-bottom: 1px dashed var(--line);
-  padding-bottom: 8px;
+  align-items: baseline;
+  gap: 14px;
+  border-bottom: 1px solid var(--filete);
+  padding: 9px 0;
 }
 
 .row:last-child {
@@ -130,170 +301,275 @@ dl {
 }
 
 dt {
-  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
 }
 
 dd {
   margin: 0;
+  font-size: 16px;
   text-align: right;
-  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-a {
-  color: var(--accent);
+/* Notas médicas: selladas, no en letra pequeña. */
+.alert {
+  background: #fbf6ef;
+  border: 1px solid var(--sello);
+  border-left-width: 6px;
 }
 
-.btn {
-  display: inline-block;
-  padding: 13px 18px;
-  border-radius: 10px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  text-decoration: none;
-  font-weight: 600;
-  border: 0;
-  font-size: 17px;
-  cursor: pointer;
+.alert h2 {
+  color: var(--sello);
+  border-bottom-color: rgba(140, 47, 47, 0.35);
+}
+
+.alert p {
+  margin: 0;
+}
+
+footer.muted {
+  border-top: 1px solid var(--filete);
+  padding-top: 12px;
+}
+
+footer.muted p {
+  margin: 0 0 6px;
+}
+
+/* ---------- La etiqueta del collar ---------- */
+
+.qr-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+}
+
+.tile {
+  position: relative;
+  background: var(--papel-alto);
+  border: 1px solid var(--tinta);
+  padding: 18px 18px 14px;
   text-align: center;
-}
-
-.btn.wa {
-  background: var(--wa);
-  color: #06301a;
   width: 100%;
+  max-width: 360px;
 }
 
-.btn.ghost {
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
+.tile::before,
+.tile::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--tinta);
+  border-style: solid;
 }
 
-.btn:disabled {
-  opacity: 0.55;
-  cursor: progress;
+.tile::before {
+  top: 6px;
+  left: 6px;
+  border-width: 1px 0 0 1px;
 }
+
+.tile::after {
+  bottom: 6px;
+  right: 6px;
+  border-width: 0 1px 1px 0;
+}
+
+.tile .cut {
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+}
+
+.tile .cut small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+  margin-top: 7px;
+}
+
+.qr-code {
+  width: 100%;
+  max-width: 250px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid var(--tinta);
+  padding: 6px;
+  background: #fff;
+}
+
+.tile #pet-name {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 12px 0 2px;
+}
+
+.tag-phone {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta);
+  margin: 2px 0 0;
+}
+
+.tile .muted.small {
+  margin: 8px 0 0;
+}
+
+.tile code {
+  font-size: 10px;
+  color: var(--tinta-suave);
+  overflow-wrap: anywhere;
+}
+
+/* El sello: gesto de identidad que solo tiene sentido en un documento.
+   Lleva la fecha real de emisión, no una promesa. Va en el flujo, debajo del
+   teléfono: flotando en una esquina tapaba justo el número. */
+.sello {
+  display: inline-block;
+  margin: 18px 0 4px;
+  transform: rotate(-7deg);
+  border: 2px solid var(--sello);
+  color: var(--sello);
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: var(--papel-alto);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+}
+
+/* ---------- Formularios ---------- */
 
 form {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 label {
   display: grid;
   gap: 6px;
-  font-weight: 600;
-  font-size: 15px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--tinta);
 }
 
 label span {
-  color: var(--ink-soft);
-  font-weight: 400;
+  font-family: var(--serif);
   font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tinta-suave);
 }
 
 input,
 textarea {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font: inherit;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--tinta);
+  border-radius: 0;
   background: #fff;
-  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--tinta);
 }
 
 input:focus,
 textarea:focus {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--sello);
   outline-offset: 1px;
-  border-color: var(--accent);
+}
+
+/* El color del texto de ejemplo lo pone el navegador por defecto (y cambia de
+   uno a otro): se fija aqui para que siempre pase contraste. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--tinta-suave);
+  opacity: 1;
 }
 
 .grid-2 {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   grid-template-columns: 1fr 1fr;
+  /* Alinea los campos por abajo: si una etiqueta lleva ayuda y la vecina no,
+     los dos campos siguen quedando a la misma altura. */
+  align-items: end;
+}
+
+.notice {
+  border: 1px dashed var(--tinta);
+  padding: 14px;
+  font-size: 15px;
+}
+
+.notice.ok {
+  background: #f7f4ea;
+}
+
+.notice.bad {
+  border-color: var(--sello);
+  color: var(--sello);
+}
+
+.token {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid var(--filete);
+  padding: 10px;
+  display: block;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 520px) {
   .grid-2 {
     grid-template-columns: 1fr;
   }
+
+  .actions {
+    grid-template-columns: 1fr;
+  }
 }
 
-.notice {
-  border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 15px;
-}
+/* ============================================================
+   Impresión: la etiqueta sale a tamaño real, 50 × 50 mm.
+   Sin esto el navegador imprime la página entera y la promesa
+   de "tamaño carnet" no se cumple.
+   ============================================================ */
 
-.notice.ok {
-  background: #eaf5ef;
-  border: 1px solid #bfdccb;
-}
-
-.notice.bad {
-  background: #fdeceb;
-  border: 1px solid #e9bcb8;
-}
-
-.token {
-  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 15px;
-  background: #f1eee7;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px;
-  overflow-wrap: anywhere;
-  display: block;
-}
-
-.qr-wrap {
-  display: grid;
-  justify-items: center;
-  gap: 12px;
-}
-
-.qr-code {
-  width: min(320px, 100%);
-  height: auto;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  padding: 8px;
-}
-
-.tile {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 14px;
-  background: #fff;
-  text-align: center;
-}
-
-.tile .cut {
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 4px;
-}
-
-.tile .cut small {
-  display: block;
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--ink-soft);
-}
-
-code {
-  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-  font-size: 0.92em;
-}
-
-.actions {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 1fr 1fr;
+@page {
+  size: A4;
+  margin: 12mm;
 }
 
 @media print {
@@ -304,15 +580,91 @@ code {
 
   body {
     background: #fff;
-  }
-
-  .card {
-    box-shadow: none;
-    border-color: #ccc;
-    break-inside: avoid;
+    background-image: none;
+    font-size: 11pt;
   }
 
   main {
+    width: auto;
     padding: 0;
+    gap: 8mm;
+  }
+
+  .card {
+    background: #fff;
+    /* Sin borde: si no, el navegador imprime un marco de 186 mm (todo el ancho
+       útil) alrededor de un carné de 5 cm. */
+    border: 0;
+    padding: 0;
+    break-inside: avoid;
+  }
+
+  .card h2 {
+    border-bottom-color: #ccc;
+  }
+
+  .qr-wrap {
+    gap: 6mm;
+  }
+
+  .tile {
+    width: 50mm;
+    height: 50mm;
+    max-width: none;
+    padding: 3mm;
+    border: 0.4mm solid var(--tinta);
+    overflow: hidden;
+    break-inside: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .tile::before,
+  .tile::after {
+    width: 3mm;
+    height: 3mm;
+  }
+
+  .tile .cut {
+    font-size: 3mm;
+    line-height: 1.15;
+    margin: 0 0 1.2mm;
+  }
+
+  /* La segunda linea ("asi avisas...") y el sello no se leen a 5 cm y le roban
+     milimetros al QR y al telefono. En papel manda lo que sirve. */
+  .tile .cut small,
+  .tile .sello {
+    display: none;
+  }
+
+  .tile .qr-code {
+    width: 24mm;
+    height: 24mm;
+    max-width: none;
+    border: 0;
+    padding: 0;
+  }
+
+  .tile #pet-name {
+    font-size: 4.2mm;
+    margin: 1.4mm 0 0.4mm;
+  }
+
+  .tile .tag-phone {
+    font-size: 2.8mm;
+  }
+
+  /* La URL completa no se lee a 5 cm: en papel manda el QR y el teléfono. */
+  .tile .muted.small {
+    display: none;
+  }
+
+  .tile .sello {
+    font-size: 1.8mm;
+    padding: 0.6mm 1mm;
+    right: 1.5mm;
+    bottom: 1.5mm;
+    background: #fff;
   }
 }

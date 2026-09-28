@@ -19,7 +19,9 @@
       <p class="cut">Si me encuentras, escanéame<small>Así avisas a mi familia</small></p>
       <img id="qr" class="qr-code" alt="Código QR de la ficha" width="320" height="320">
       <p class="cut" id="pet-name"></p>
+      <a class="tag-phone" id="tag-phone" hidden></a>
       <p class="muted small">O visita: <code id="url"></code></p>
+      <span class="sello" id="sello" hidden></span>
     </div>
     <div class="actions no-print">
       <a class="btn" id="download" download>Descargar PNG</a>
@@ -49,23 +51,36 @@ function fail(message) {
   el("subtitle").textContent = "No se pudo generar el QR.";
 }
 
-async function petName() {
+async function petData() {
   try {
     const response = await fetch(`/api/pets/${encodeURIComponent(slug)}`);
     if (response.status === 404) return { missing: true };
-    if (response.ok) return { name: (await response.json()).pet.name };
+    if (response.ok) return { pet: (await response.json()).pet };
   } catch {
     // Si la API falla, el QR sigue siendo valido: solo perdemos el nombre bonito.
   }
   return {};
 }
 
+/** "2026-09-28T22:08:00Z" -> "28·09·2026". Sin zona horaria: es la fecha de la ficha. */
+function fechaEmision(iso) {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ""));
+  return partes ? `${partes[3]}·${partes[2]}·${partes[1]}` : "";
+}
+
+/** "+57 300 123 4567" -> "tel:+573001234567". Para quien no puede escanear. */
+function telHref(phone) {
+  const limpio = String(phone || "").replace(/[^\d+]/g, "");
+  return limpio ? `tel:${limpio}` : "";
+}
+
 async function init() {
   if (!slug) return fail("Falta el slug de la mascota en la URL.");
 
-  const { missing, name = slug } = await petName();
+  const { missing, pet } = await petData();
   if (missing) return fail(`La ficha /${slug} no existe.`);
 
+  const name = pet?.name || slug;
   const url = publicUrl();
   const qr = el("qr");
   const download = el("download");
@@ -80,6 +95,23 @@ async function init() {
   download.setAttribute("download", `petid-qr-${slug}.png`);
   el("url").textContent = url;
   el("pet-name").textContent = name;
+
+  // El telefono impreso sirve a quien no puede escanear; la fecha del sello es
+  // la de emision real de la ficha, no una promesa de revision.
+  const phone = el("tag-phone");
+  const href = telHref(pet?.owner_phone);
+  if (href) {
+    phone.href = href;
+    phone.textContent = pet.owner_phone;
+    phone.hidden = false;
+  }
+
+  const fecha = fechaEmision(pet?.created_at);
+  if (fecha) {
+    el("sello").textContent = `Emitida ${fecha}`;
+    el("sello").hidden = false;
+  }
+
   document.title = `QR de ${name} — PETID`;
   el("subtitle").textContent = `QR de ${name}, apuntando a ${url}`;
   el("card").hidden = false;

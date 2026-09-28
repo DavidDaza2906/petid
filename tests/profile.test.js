@@ -20,8 +20,8 @@ describe("GET /api/profile/<slug>", () => {
     expect(html).toContain("Firulais");
     expect(html).toContain("+57 300 123 4567");
     expect(html).toContain("https://wa.me/573001234567");
-    expect(html).toContain("Alérgica a la penicilina");
-    expect(html).toContain("Criolla");
+    expect(html).toContain("Alérgico a la penicilina");
+    expect(html).toContain("Criollo");
   });
 
   it("NUNCA expone el edit_token", async () => {
@@ -40,6 +40,20 @@ describe("GET /api/profile/<slug>", () => {
     expect(html).not.toContain("<img src=x");
     expect(html).not.toContain("<b>mal</b>");
     expect(html).toContain("&lt;img src=x");
+  });
+
+  it("ofrece llamar por teléfono, no solo WhatsApp", async () => {
+    const { html } = await get("firulais");
+    expect(html).toContain('href="tel:+573001234567"');
+    expect(html).toContain('class="phone"');
+  });
+
+  it("rotula el hueco cuando no hay foto, y no lo esconde", async () => {
+    const store = fakeStore({ rows: { firulais: samplePet({ photo_url: null }) } });
+    const { html } = await get("firulais", { store });
+    expect(html).toContain('class="photo-slot"');
+    expect(html).toContain("Sin fotografía");
+    expect(html).not.toContain('class="photo"');
   });
 
   it("404 con HTML si no existe", async () => {

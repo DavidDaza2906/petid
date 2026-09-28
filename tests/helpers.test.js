@@ -6,6 +6,7 @@ import {
   pickEditable,
   pickPublic,
   publicPetUrl,
+  telLink,
   waLink,
 } from "../api/lib/helpers.js";
 
@@ -45,6 +46,18 @@ describe("waLink", () => {
   it("devuelve vacio si no hay digitos", () => {
     expect(waLink("")).toBe("");
     expect(waLink(null)).toBe("");
+  });
+});
+
+describe("telLink", () => {
+  it("deja el telefono listo para llamar de un toque", () => {
+    expect(telLink("+57 300 123 4567")).toBe("tel:+573001234567");
+    expect(telLink("(300)-123-4567")).toBe("tel:3001234567");
+  });
+
+  it("devuelve vacio si no hay digitos", () => {
+    expect(telLink("")).toBe("");
+    expect(telLink(null)).toBe("");
   });
 });
 

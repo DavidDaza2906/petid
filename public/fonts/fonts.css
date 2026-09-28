@@ -1,0 +1,18 @@
+/* Generado: subconjunto latino (cubre tildes y eñes) de dos fuentes variables
+   con licencia SIL Open Font License. Un solo archivo por familia cubre todos
+   los pesos, y no hay CDN de por medio: las fuentes se sirven desde este sitio. */
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("source-serif-4-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("jetbrains-mono-400.woff2") format("woff2");
+}

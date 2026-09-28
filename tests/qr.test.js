@@ -122,3 +122,22 @@ describe("regresion: la pagina del collar no depende de un CDN", () => {
     expect(html).toContain("/api/qr/");
   });
 });
+
+describe("regresion: la etiqueta se imprime a tamano carnet", () => {
+  const css = readFileSync(fileURLToPath(new URL("../public/style.css", import.meta.url)), "utf8");
+
+  it("fija el tamano de pagina", () => {
+    expect(css).toMatch(/@page\s*\{[^}]*size:\s*A4/);
+  });
+
+  it("la etiqueta mide 50 mm en papel", () => {
+    expect(css).toMatch(/width:\s*50mm/);
+    expect(css).toMatch(/height:\s*50mm/);
+  });
+
+  it("deja el QR y el telefono a la vista, y esconde la URL completa", () => {
+    expect(css).toMatch(/\.tile \.qr-code\s*\{[^}]*24mm/);
+    expect(css).toMatch(/\.tag-phone\s*\{[^}]*2\.8mm/);
+    expect(css).toMatch(/\.tile \.muted\.small\s*\{\s*display:\s*none/);
+  });
+});

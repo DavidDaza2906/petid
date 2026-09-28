@@ -1,4 +1,4 @@
-import { esc, pickPublic, publicPetUrl, requestOrigin, trimmedString, waLink } from "../lib/helpers.js";
+import { esc, pickPublic, publicPetUrl, requestOrigin, telLink, trimmedString, waLink } from "../lib/helpers.js";
 import { store as defaultStore } from "../lib/db.js";
 import { attempt, errorMessage, sendHtml } from "../lib/http.js";
 
@@ -21,9 +21,19 @@ function notFoundPage(slug) {
 function petPage(pet, requestOrigin) {
   const url = publicPetUrl(requestOrigin, pet.slug);
   const wa = waLink(pet.owner_phone);
-  const photo = pet.photo_url
-    ? `<img class="photo" src="${esc(pet.photo_url)}" alt="${esc(pet.name)}" loading="lazy" onerror="this.remove()">`
-    : "";
+  const tel = telLink(pet.owner_phone);
+
+  // La ventanilla del retrato existe siempre: con foto, y si la foto falla o no
+  // hay, queda el hueco rotulado con la inicial. Un documento no esconde vacíos.
+  const inicial = esc(String(pet.name ?? "").trim().charAt(0).toUpperCase() || "?");
+  const photo = `<div class="photo-slot">
+      <span class="initial" aria-hidden="true">${inicial}</span>
+      ${
+        pet.photo_url
+          ? `<img class="photo" src="${esc(pet.photo_url)}" alt="${esc(pet.name)}" loading="lazy" onerror="this.remove()">`
+          : `<span class="no-photo">Sin fotografía</span>`
+      }
+    </div>`;
 
   const medical = pet.medical_notes
     ? `<section class="card alert">
@@ -43,6 +53,11 @@ function petPage(pet, requestOrigin) {
     ? `<a class="btn wa" href="${esc(wa)}" rel="noopener">Escribirle a ${esc(pet.owner_name)} por WhatsApp</a>`
     : `<p class="muted">El dueño no dejó teléfono de contacto.</p>`;
 
+  // Un segundo camino, para quien no tiene WhatsApp o prefiere llamar.
+  const telLine = tel
+    ? `<p><a class="phone" href="${esc(tel)}">${esc(pet.owner_phone)}</a></p>`
+    : "";
+
   const body = `
     <section class="card hero">
       ${photo}
@@ -50,6 +65,7 @@ function petPage(pet, requestOrigin) {
       <p class="muted">${[pet.species, pet.breed, pet.age].filter(Boolean).map(esc).join(" · ")}</p>
       <p class="found">Si encontraste a esta mascota, avisa a su familia:</p>
       ${waButton}
+      ${telLine}
     </section>
     <section class="card">
       <h2>Ficha</h2>
@@ -68,10 +84,10 @@ function petPage(pet, requestOrigin) {
       <p><a href="/pet/${esc(pet.slug)}/edit">Editar esta ficha</a></p>
     </footer>`;
 
-  return page({ title: `${pet.name} — PETID`, body });
+  return page({ title: `${pet.name} — PETID`, body, ficha: pet.slug });
 }
 
-function page({ title, body }) {
+function page({ title, body, ficha }) {
   return `<!doctype html>
 <html lang="es">
 <head>
@@ -81,7 +97,7 @@ function page({ title, body }) {
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header class="topbar"><a href="/" class="brand">PETID</a></header>
+<header class="topbar"${ficha ? ` data-ficha="${esc(ficha)}"` : ""}><a href="/" class="brand">PETID</a></header>
 <main>${body}</main>
 </body>
 </html>`;
