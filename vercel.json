@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/pet/:slug/edit", "destination": "/edit.html?slug=:slug" },
+    { "source": "/pet/:slug/tag", "destination": "/tag.html?slug=:slug" },
+    { "source": "/pet/:slug", "destination": "/api/profile/:slug" }
+  ]
+}
