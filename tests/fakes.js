@@ -53,14 +53,14 @@ export function fakeStore({ rows = {} } = {}) {
 }
 
 export const samplePet = (overrides = {}) => ({
-  slug: "mila",
+  slug: "firulais",
   edit_token: "a".repeat(32),
   created_at: "2026-09-28T00:00:00.000Z",
-  name: "Mila",
+  name: "Firulais",
   species: "Perra",
   breed: "Criolla",
   age: "3 años",
-  photo_url: "https://example.com/mila.jpg",
+  photo_url: "https://example.com/firulais.jpg",
   medical_notes: "Alérgica a la penicilina",
   owner_name: "Daw",
   owner_phone: "+57 300 123 4567",

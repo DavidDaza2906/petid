@@ -4,7 +4,7 @@ import { fakeReq, fakeRes, fakeStore, samplePet } from "./fakes.js";
 
 const get = async (slug, { store } = {}) => {
   const res = fakeRes();
-  const used = store ?? fakeStore({ rows: { mila: samplePet() } });
+  const used = store ?? fakeStore({ rows: { firulais: samplePet() } });
   await createProfileHandler({ store: used })(
     fakeReq({ method: "GET", query: { slug }, headers: { host: "petid.vercel.app" } }),
     res,
@@ -14,10 +14,10 @@ const get = async (slug, { store } = {}) => {
 
 describe("GET /api/profile/<slug>", () => {
   it("devuelve HTML con nombre, teléfono, link de WhatsApp y notas médicas", async () => {
-    const { res, html } = await get("mila");
+    const { res, html } = await get("firulais");
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("text/html");
-    expect(html).toContain("Mila");
+    expect(html).toContain("Firulais");
     expect(html).toContain("+57 300 123 4567");
     expect(html).toContain("https://wa.me/573001234567");
     expect(html).toContain("Alérgica a la penicilina");
@@ -25,7 +25,7 @@ describe("GET /api/profile/<slug>", () => {
   });
 
   it("NUNCA expone el edit_token", async () => {
-    const { html } = await get("mila");
+    const { html } = await get("firulais");
     expect(html).not.toContain(samplePet().edit_token);
     expect(html).not.toContain("edit_token");
   });
@@ -33,10 +33,10 @@ describe("GET /api/profile/<slug>", () => {
   it("escapa el HTML de los campos del usuario", async () => {
     const store = fakeStore({
       rows: {
-        mila: samplePet({ name: '<img src=x onerror="alert(1)">', owner_note: "<b>mal</b>" }),
+        firulais: samplePet({ name: '<img src=x onerror="alert(1)">', owner_note: "<b>mal</b>" }),
       },
     });
-    const { html } = await get("mila", { store });
+    const { html } = await get("firulais", { store });
     expect(html).not.toContain("<img src=x");
     expect(html).not.toContain("<b>mal</b>");
     expect(html).toContain("&lt;img src=x");

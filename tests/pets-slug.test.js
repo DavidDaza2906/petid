@@ -4,9 +4,9 @@ import { fakeReq, fakeRes, fakeStore, samplePet } from "./fakes.js";
 
 const call = async (method, { body, headers, store } = {}) => {
   const res = fakeRes();
-  const used = store ?? fakeStore({ rows: { mila: samplePet() } });
+  const used = store ?? fakeStore({ rows: { firulais: samplePet() } });
   await createPetHandler({ store: used })(
-    fakeReq({ method, query: { slug: "mila" }, body, headers }),
+    fakeReq({ method, query: { slug: "firulais" }, body, headers }),
     res,
   );
   return { res, payload: res.json(), store: used };
@@ -16,7 +16,7 @@ describe("GET /api/pets/<slug>", () => {
   it("devuelve los campos públicos SIN edit_token", async () => {
     const { res, payload } = await call("GET");
     expect(res.statusCode).toBe(200);
-    expect(payload.pet.name).toBe("Mila");
+    expect(payload.pet.name).toBe("Firulais");
     expect(payload.pet.owner_phone).toBe("+57 300 123 4567");
     expect(payload.pet.edit_token).toBeUndefined();
     expect(JSON.stringify(payload)).not.toContain(samplePet().edit_token);
@@ -47,13 +47,13 @@ describe("PUT /api/pets/<slug>", () => {
 
   it("no deja cambiar el slug ni el token", async () => {
     const { res, store } = await call("PUT", {
-      body: { edit_token: "a".repeat(32), slug: "otro", edit_token_nuevo: "x", name: "Mila II" },
+      body: { edit_token: "a".repeat(32), slug: "otro", edit_token_nuevo: "x", name: "Firulais II" },
     });
     expect(res.statusCode).toBe(200);
-    const saved = store.table.get("mila");
-    expect(saved.slug).toBe("mila");
+    const saved = store.table.get("firulais");
+    expect(saved.slug).toBe("firulais");
     expect(saved.edit_token).toBe("a".repeat(32));
-    expect(saved.name).toBe("Mila II");
+    expect(saved.name).toBe("Firulais II");
   });
 
   it("con token correcto actualiza y devuelve la ficha pública", async () => {

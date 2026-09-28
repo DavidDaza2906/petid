@@ -31,7 +31,7 @@ export const EDITABLE_FIELDS = [
 export const REQUIRED_ON_CREATE = ["name", "owner_name", "owner_phone"];
 export const REQUIRED_IF_PRESENT = ["name", "owner_name", "owner_phone"];
 
-/** "Mila!" -> "mila"; "Rocky el Perro" -> "rocky-el-perro"; acentos fuera. */
+/** "Firuláis!" -> "firulais"; "Rocky el Perro" -> "rocky-el-perro"; acentos fuera. */
 export function makeSlug(input) {
   const base = String(input ?? "")
     .normalize("NFD")

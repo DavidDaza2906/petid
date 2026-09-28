@@ -21,7 +21,7 @@ describe("POST /api/pets", () => {
 
   it("crea la mascota con slug y token, y no guarda el token en la respuesta pública", async () => {
     const { res, payload, store } = await post({
-      name: "Mila",
+      name: "Firulais",
       owner_name: "Daw",
       owner_phone: "+57 300 123 4567",
       species: "Perra",
@@ -30,26 +30,26 @@ describe("POST /api/pets", () => {
     });
 
     expect(res.statusCode).toBe(201);
-    expect(payload.slug).toBe("mila");
+    expect(payload.slug).toBe("firulais");
     expect(payload.edit_token).toMatch(/^[0-9a-f]{32}$/);
     expect(payload.edit_token).not.toBe("inyectado-por-el-cliente");
     expect(payload.pet.edit_token).toBeUndefined();
 
-    const saved = store.table.get("mila");
+    const saved = store.table.get("firulais");
     expect(saved.owner_phone).toBe("+57 300 123 4567");
     expect(saved.edit_token).toBe(payload.edit_token);
   });
 
   it("si el slug existe añade sufijo aleatorio en vez de sobrescribir", async () => {
-    const store = fakeStore({ rows: { mila: { slug: "mila", edit_token: "otro" } } });
+    const store = fakeStore({ rows: { firulais: { slug: "firulais", edit_token: "otro" } } });
     const { res, payload, store: used } = await post(
-      { name: "Mila", owner_name: "Daw", owner_phone: "+573001234567" },
+      { name: "Firulais", owner_name: "Daw", owner_phone: "+573001234567" },
       store,
     );
 
     expect(res.statusCode).toBe(201);
-    expect(payload.slug).toMatch(/^mila-[0-9a-f]{4}$/);
-    expect(used.table.get("mila").edit_token).toBe("otro");
+    expect(payload.slug).toMatch(/^firulais-[0-9a-f]{4}$/);
+    expect(used.table.get("firulais").edit_token).toBe("otro");
     expect(used.table.size).toBe(2);
   });
 
@@ -69,7 +69,7 @@ describe("POST /api/pets", () => {
       },
     };
     const res = fakeRes();
-    await createPetsHandler({ store })(fakeReq({ method: "POST", body: { name: "Mila", owner_name: "Daw", owner_phone: "+573001234567" } }), res);
+    await createPetsHandler({ store })(fakeReq({ method: "POST", body: { name: "Firulais", owner_name: "Daw", owner_phone: "+573001234567" } }), res);
     expect(res.statusCode).toBe(500);
     expect(res.json().detail).toContain("permission denied");
   });

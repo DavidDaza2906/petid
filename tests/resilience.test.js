@@ -31,26 +31,26 @@ describe("resiliencia: la capa de datos falla", () => {
 
   it("GET /api/pets/<slug> responde 500 en JSON", async () => {
     const res = fakeRes();
-    await createPetHandler({ store: throwingStore() })(fakeReq({ method: "GET", query: { slug: "mila" } }), res);
+    await createPetHandler({ store: throwingStore() })(fakeReq({ method: "GET", query: { slug: "firulais" } }), res);
     expect(res.statusCode).toBe(500);
     expect(res.json().error).toBe("read_failed");
   });
 
   it("PUT /api/pets/<slug> responde 500 en JSON cuando falla la escritura", async () => {
     const pet = samplePet();
-    const store = fakeStore({ rows: { mila: pet } });
+    const store = fakeStore({ rows: { firulais: pet } });
     store.updatePet = async () => {
       throw new Error("update boom");
     };
     const res = fakeRes();
-    await createPetHandler({ store })(fakeReq({ method: "PUT", query: { slug: "mila" }, body: { edit_token: pet.edit_token, breed: "mestiza" } }), res);
+    await createPetHandler({ store })(fakeReq({ method: "PUT", query: { slug: "firulais" }, body: { edit_token: pet.edit_token, breed: "mestiza" } }), res);
     expect(res.statusCode).toBe(500);
     expect(res.json().error).toBe("update_failed");
   });
 
   it("GET /pet/<slug> responde 500 en HTML", async () => {
     const res = fakeRes();
-    await createProfileHandler({ store: throwingStore() })(fakeReq({ method: "GET", query: { slug: "mila" } }), res);
+    await createProfileHandler({ store: throwingStore() })(fakeReq({ method: "GET", query: { slug: "firulais" } }), res);
     expect(res.statusCode).toBe(500);
     expect(res.headers["content-type"]).toContain("text/html");
     expect(res.body).toContain("Algo fall");

@@ -7,17 +7,17 @@ import { createQrHandler } from "../api/qr/[slug].js";
 import { fakeReq, fakeRes, fakeStore, samplePet } from "./fakes.js";
 
 const HOST = "petid-eight.vercel.app";
-const EXPECTED_URL = `https://${HOST}/pet/mila`;
+const EXPECTED_URL = `https://${HOST}/pet/firulais`;
 
 const req = (over = {}) =>
   fakeReq({
     method: "GET",
-    query: { slug: "mila" },
+    query: { slug: "firulais" },
     headers: { host: HOST, "x-forwarded-proto": "https" },
     ...over,
   });
 
-const handlerWith = (over = {}) => createQrHandler({ store: fakeStore({ rows: { mila: samplePet() } }), ...over });
+const handlerWith = (over = {}) => createQrHandler({ store: fakeStore({ rows: { firulais: samplePet() } }), ...over });
 
 /** Decodifica el PNG como lo haria un lector de QR. */
 function decode(pngBuffer) {
@@ -56,13 +56,13 @@ describe("GET /api/qr/<slug>", () => {
       req({ headers: { host: "localhost:3000", "x-forwarded-proto": "http" } }),
       res,
     );
-    expect(decode(res.body)).toBe("http://localhost:3000/pet/mila");
+    expect(decode(res.body)).toBe("http://localhost:3000/pet/firulais");
   });
 
   it("marca la descarga cuando se pide ?download=1", async () => {
     const res = fakeRes();
-    await handlerWith()(req({ query: { slug: "mila", download: "1" } }), res);
-    expect(res.headers["content-disposition"]).toBe('attachment; filename="petid-qr-mila.png"');
+    await handlerWith()(req({ query: { slug: "firulais", download: "1" } }), res);
+    expect(res.headers["content-disposition"]).toBe('attachment; filename="petid-qr-firulais.png"');
   });
 
   it("404 si la ficha no existe: no se imprime un QR que lleva a la nada", async () => {

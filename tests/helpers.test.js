@@ -11,7 +11,7 @@ import {
 
 describe("makeSlug", () => {
   it("pasa a minusculas y quita signos", () => {
-    expect(makeSlug("Mila!")).toBe("mila");
+    expect(makeSlug("Firuláis!")).toBe("firulais");
     expect(makeSlug("Rocky el Perro")).toBe("rocky-el-perro");
   });
 
@@ -53,7 +53,7 @@ describe("esc", () => {
     expect(esc('<script>alert("x")</script>')).toBe(
       "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;",
     );
-    expect(esc("Rocky & Mila's")).toBe("Rocky &amp; Mila&#39;s");
+    expect(esc("Rocky & Firulais's")).toBe("Rocky &amp; Firulais&#39;s");
   });
 
   it("tolera null y undefined", () => {
@@ -64,25 +64,25 @@ describe("esc", () => {
 
 describe("publicPetUrl", () => {
   it("construye la URL publica del QR", () => {
-    expect(publicPetUrl("https://petid.vercel.app", "mila")).toBe("https://petid.vercel.app/pet/mila");
+    expect(publicPetUrl("https://petid.vercel.app", "firulais")).toBe("https://petid.vercel.app/pet/firulais");
   });
 
   it("no duplica la barra final del origin", () => {
-    expect(publicPetUrl("https://petid.vercel.app/", "mila")).toBe(
-      "https://petid.vercel.app/pet/mila",
+    expect(publicPetUrl("https://petid.vercel.app/", "firulais")).toBe(
+      "https://petid.vercel.app/pet/firulais",
     );
   });
 });
 
 describe("pickPublic / pickEditable", () => {
   it("pickPublic deja fuera edit_token", () => {
-    const out = pickPublic({ slug: "mila", name: "Mila", edit_token: "secreto" });
-    expect(out).toEqual({ slug: "mila", name: "Mila" });
+    const out = pickPublic({ slug: "firulais", name: "Firulais", edit_token: "secreto" });
+    expect(out).toEqual({ slug: "firulais", name: "Firulais" });
     expect("edit_token" in out).toBe(false);
   });
 
   it("pickEditable solo acepta campos editables", () => {
-    const out = pickEditable({ name: " Mila ", edit_token: "x", slug: "y", age: 3 });
-    expect(out).toEqual({ name: "Mila", age: "3" });
+    const out = pickEditable({ name: " Firulais ", edit_token: "x", slug: "y", age: 3 });
+    expect(out).toEqual({ name: "Firulais", age: "3" });
   });
 });
